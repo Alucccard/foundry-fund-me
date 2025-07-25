@@ -1,31 +1,36 @@
 -include .env
 
 build:
- forge build
+	forge build
 
 deploy-sepolia:
 	forge script script/FundMeScript.s.sol:FundMeScript --rpc-url $(SEPOLIA_RPC_URL) --private-key $(SEPOLIA_PRIVATE_KEY) --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
 
 
-.PHONY: all test clean deploy fund help install snapshot format anvil zktest
+.PHONY:
+	all test clean deploy fund help install snapshot format anvil zktest
 
 DEFAULT_ANVIL_KEY := 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 DEFAULT_ZKSYNC_LOCAL_KEY := 0x7726827caac94a7f9e1b160f7ea819f172f7b6f9d2a97f992c38edeab82d4110
 
-all: clean remove install update build
+all:
+	clean remove install update build
 
 # Clean the repo
-clean  :; forge clean
+clean:
+	forge clean
 
 # Remove modules
-remove :; rm -rf .gitmodules && rm -rf .git/modules/* && rm -rf lib && touch .gitmodules && git add . && git commit -m "modules"
+remove:
+	rm -rf .gitmodules && rm -rf .git/modules/* && rm -rf lib && touch .gitmodules && git add . && git commit -m "modules"
 
-install :; forge install cyfrin/foundry-devops@0.2.2 && forge install smartcontractkit/chainlink-brownie-contracts@1.1.1 && forge install foundry-rs/forge-std@v1.8.2
+install:
+	forge install cyfrin/foundry-devops@0.2.2 && forge install smartcontractkit/chainlink-brownie-contracts@1.1.1 && forge install foundry-rs/forge-std@v1.8.2
 
 # Update Dependencies
-update:; forge update
+update :; forge update
 
-build:; forge build
+build :; forge build
 
 zkbuild :; forge build --zksync
 
@@ -42,13 +47,13 @@ anvil :; anvil -m 'test test test test test test test test test test test junk' 
 zk-anvil :; npx zksync-cli dev start
 
 deploy:
-	@forge script script/DeployFundMe.s.sol:DeployFundMe $(NETWORK_ARGS)
+	@forge script script/FundMeScript.s.sol:FundMeScript $(NETWORK_ARGS)
 
-NETWORK_ARGS := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY) --broadcast
+	NETWORK_ARGS := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY) --broadcast
 
-ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
+	ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
 	NETWORK_ARGS := --rpc-url $(SEPOLIA_RPC_URL) --account $(ACCOUNT) --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
-endif
+	endif
 
 deploy-sepolia:
 	@forge script script/DeployFundMe.s.sol:DeployFundMe $(NETWORK_ARGS)
@@ -59,7 +64,6 @@ deploy-zk:
 
 deploy-zk-sepolia:
 	forge create src/FundMe.sol:FundMe --rpc-url ${ZKSYNC_SEPOLIA_RPC_URL} --account default --constructor-args 0xfEefF7c3fB57d18C5C6Cdd71e45D2D0b4F9377bF --legacy --zksync
-
 
 # For deploying Interactions.s.sol:FundFundMe as well as for Interactions.s.sol:WithdrawFundMe we have to include a sender's address `--sender <ADDRESS>`
 SENDER_ADDRESS := <sender's address>
